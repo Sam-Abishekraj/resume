@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sam Abishekraj D - Resume</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0a0a0a, #1a1a1a);
+      color: #f0f0f0;
+      overflow-x: hidden;
+      font-size: 1.2rem;
+    }
+
+    header {
+      background: linear-gradient(to right, #1c1c1c, #101010);
+      padding: 80px 20px;
+      text-align: center;
+    }
+
+    .image-placeholder {
+      width: 200px;
+      height: 200px;
+      background: url('myimg.jpeg') center/cover no-repeat;
+      border-radius: 50%;
+      margin: 0 auto 30px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+      transition: transform 0.6s ease;
+    }
+
+    .image-placeholder:hover {
+      transform: rotateY(180deg);
+    }
+
+    h1 {
+      color: #00ffe7;
+      font-weight: 800;
+      font-size: 3rem;
+    }
+
+    h2 {
+      color: #00ffe7;
+      font-weight: 700;
+      font-size: 2.4rem;
+      margin-bottom: 30px;
+    }
+
+    h5, h6 {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    p {
+      font-weight: 400;
+    }
+
+    .section {
+      padding: 70px 20px;
+    }
+
+    .card-custom {
+      background: #1f1f1f;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 255, 255, 0.15);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      height: 100%;
+      text-align: center;
+    }
+
+    .card-custom:hover {
+      transform: translateY(-12px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 255, 255, 0.3);
+    }
+
+    .nav-link {
+      color: #00ffe7 !important;
+      font-weight: 500;
+      font-size: 1.1rem;
+    }
+
+    .fade-in, .slide-left, .slide-right {
+      opacity: 0;
+      transition: all 0.8s ease;
+    }
+
+    .fade-in.appear, .slide-left.appear, .slide-right.appear {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .slide-left {
+      transform: translateX(-60px);
+    }
+
+    .slide-right {
+      transform: translateX(60px);
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    footer {
+      font-size: 1rem;
+    }
+
+    .emoji {
+      font-size: 1.5rem;
+    }
+
+    .links {
+      margin-top: 15px;
+    }
+
+    .ds-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="image-placeholder"></div>
+  <h1>Sam Abishekraj D</h1>
+  <p>Email: <strong>samabishek7@gmail.com</strong> | Mobile: <strong>8072680271</strong> | Madurai - 625020</p>
+  <div class="links">
+    <a href="https://github.com/Sam-Abishekraj" target="_blank" class="btn btn-outline-info btn-sm">GitHub 🔗</a>
+    <a href="https://www.linkedin.com/in/sam-abishekraj/" target="_blank" class="btn btn-outline-info btn-sm">LinkedIn 🔗</a>
+  </div>
+</header>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Resume</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="#education">Education</a></li>
+        <li class="nav-item"><a class="nav-link" href="#skills">Skills</a></li>
+        <li class="nav-item"><a class="nav-link" href="#certs">Certifications</a></li>
+        <li class="nav-item"><a class="nav-link" href="#contact">Declaration</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<section class="section" id="education">
+  <div class="container">
+    <h2 class="text-center">Education 🎓</h2>
+    <div class="row g-4">
+      <div class="col-md-6 slide-left">
+        <div class="card card-custom p-4 ds-animation">
+          <h5>B.Sc. Data Science 📊</h5>
+          <p>The American College (Autonomous)<br>Madurai Kamaraj University<br>2021 - 2024</p>
+          <p><strong>CGPA:</strong> 8.7/10</p>
+          <p><strong>IELTS:</strong> Band 6.5 (2024)</p>
+        </div>
+      </div>
+      <div class="col-md-6 slide-right">
+        <div class="card card-custom p-4 ds-animation">
+          <h5>AI Engineering Trainee 🤖</h5>
+          <p>Bepec Solutions - Remote<br><em>Ongoing since 2024</em></p>
+          <p>Hands-on experience in real-world AI projects using ML and NLP.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" id="projects">
+    <div class="container">
+      <h2 class="text-center">🛠️ Projects</h2>
+      <div class="row g-4">
+        <div class="col-md-6 slide-left">
+          <div class="card card-custom p-4">
+            <h5>🌾 Crop Classification & Prediction</h5>
+            <p>
+              Built a machine learning model to predict the best crop based on soil, temperature, and environmental factors.
+              Used classification algorithms for better crop planning and yield.
+            </p>
+            <p><strong>Tools:</strong> Python, Scikit-learn, Pandas, Matplotlib, HTML, CSS, JavaScript</p>
+          </div>
+        </div>
+        <div class="col-md-6 slide-right">
+          <div class="card card-custom p-4">
+            <h5>❤️ Heart Disease Classification</h5>
+            <p>
+              Developed a predictive model to classify heart disease risks using healthcare datasets. Added a health recommendation module for prevention.
+            </p>
+            <p><strong>Tools:</strong>HTML, CSS, JavaScript, Python, Flask, Sklearn</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+</section>
+
+<section class="section" id="skills">
+  <div class="container">
+    <h2 class="text-center">Skills & Tools 🛠️</h2>
+    <div class="row g-4">
+      <div class="col-md-4 slide-left">
+        <div class="card card-custom p-4 ds-animation">
+          <h6>Programming & Tech 💻</h6>
+          <p>Python (Advanced), C/C++, JavaScript, HTML/CSS, SQL, MySQL, Linux (Pop OS)</p>
+        </div>
+      </div>
+      <div class="col-md-4 fade-in">
+        <div class="card card-custom p-4 ds-animation">
+          <h6>Tools & Platforms 🧰</h6>
+          <p>Anaconda, PowerBI, ChatGPT, GitHub Copilot</p>
+        </div>
+      </div>
+      <div class="col-md-4 slide-right">
+        <div class="card card-custom p-4 ds-animation">
+          <h6>Other Skills 📚</h6>
+          <p>Frontend Dev, Data Analytics, Prompt Engineering, Communication</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="certs">
+  <div class="container">
+    <h2 class="text-center">Certifications 🏆</h2>
+    <div class="row g-4">
+      <div class="col-md-4 slide-left">
+        <div class="card card-custom p-4 ds-animation">
+          <h6>MTA 98-381 🐍</h6>
+          <p>Introduction to Programming Using Python - Microsoft Certified</p>
+        </div>
+      </div>
+      <div class="col-md-4 fade-in">
+        <div class="card card-custom p-4 ds-animation">
+          <h6>Google Cloud ☁️</h6>
+          <p>Generative AI Learning Path Specialization</p>
+        </div>
+      </div>
+      <div class="col-md-4 slide-right">
+        <div class="card card-custom p-4 ds-animation">
+          <h6>IBM 🤖</h6>
+          <p>Prompt Engineering Basics - AI foundation training</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container fade-in">
+    <h2 class="text-center">Hobbies 🎧📚</h2>
+    <ul>
+      <li>Programming 💻 - Love building tools and projects</li>
+      <li>Listening to Podcasts & Documentaries 🎙️</li>
+      <li>Music, Reading, Web Surfing 🌐</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="contact">
+  <div class="container fade-in">
+    <h2 class="text-center">Declaration 📜</h2>
+    <p class="text-center">I hereby declare that the above information is true to the best of my knowledge and belief.</p>
+  </div>
+</section>
+
+<footer class="text-center py-4" style="background-color: #111;">
+  <p>&copy; 2025 Sam Abishekraj D </p>
+</footer>
+
+<script>
+  const faders = document.querySelectorAll('.fade-in, .slide-left, .slide-right');
+  const appearOptions = {
+    threshold: 0.2,
+    rootMargin: "0px 0px -50px 0px"
+  };
+
+  const appearOnScroll = new IntersectionObserver(function(entries, observer) {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('appear');
+      observer.unobserve(entry.target);
+    });
+  }, appearOptions);
+
+  faders.forEach(fader => appearOnScroll.observe(fader));
+</script>
+
+</body>
+</html>
