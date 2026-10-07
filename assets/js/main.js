@@ -13,8 +13,8 @@
     var log = $('#boot-log');
     var lines = [
       'mounting /home/sam ............... ',
-      'loading toolchain: crm · sql · rag · notify · mcp ',
-      'reading ~/sutraops/eval ........ 22/25 passed ',
+      'loading modules: data · ml · dl · llm · agents ',
+      'indexing ~/projects ............ 9 found ',
       'starting interface ............. '
     ];
     var i = 0, finished = false, timer;
@@ -73,7 +73,6 @@
     if (!('IntersectionObserver' in window)) return;
     var map = {};
     $$('a[href^="#"]', links).forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
-    map.eval = map.sutraops;
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (en.isIntersecting) {
@@ -82,7 +81,7 @@
         }
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
-    ['hero', 'sutraops', 'eval', 'projects', 'experience', 'skills', 'education', 'contact'].forEach(function (id) {
+    ['hero', 'projects', 'experience', 'skills', 'education', 'contact'].forEach(function (id) {
       var s = document.getElementById(id); if (s) io.observe(s);
     });
   }
@@ -93,7 +92,7 @@
     if (reduce || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.02 });
     els.forEach(function (e) { io.observe(e); });
   }
 
@@ -101,10 +100,10 @@
   function typing() {
     var el = $('#type-text'); if (!el) return;
     var cmds = [
-      'sutraops --connect crm sql rag notify mcp',
-      'sutraops eval --langs en,ta,hi   # 22/25 passed',
-      'guardrails --redact-injection --mask-pii',
-      'approve --refunds-above 2000 --human'
+      'df.describe()',
+      'model.fit(X_train, y_train)',
+      'rag.ask("min attendance?")',
+      'agent.run(tools=["sql", "rag"])'
     ];
     if (reduce) { el.textContent = cmds[0]; return; }
     var ci = 0, i = 0, del = false;
@@ -126,7 +125,7 @@
   var words = [];
   function splitStatement() {
     var p = $('#statement'); if (!p) return;
-    var acc = /^(tool|calls,|guardrails,|human|approvals|traces|trust)$/;
+    var acc = /^(data,|machine|learning,?|deep|LLM|apps|agents|teach)$/;
     var parts = p.textContent.trim().split(/\s+/);
     p.textContent = '';
     parts.forEach(function (w, idx) {
@@ -139,49 +138,23 @@
     });
   }
 
-  /* ---------- SutraOps sticky story ---------- */
-  function story() {
-    var steps = $$('.step'), shots = $$('.shot'), dots = $$('#frame-dots i');
-    var title = $('#frame-title'), count = $('#frame-count'), cmd = $('#frame-cmd');
-    if (!steps.length || !('IntersectionObserver' in window)) return;
-    function activate(n) {
-      steps.forEach(function (s, i) { s.classList.toggle('is-active', i === n); });
-      shots.forEach(function (s) { s.classList.toggle('is-active', +s.dataset.step === n); });
-      dots.forEach(function (d, i) { d.classList.toggle('on', i <= n); });
-      var st = steps[n];
-      title.textContent = '~/sutraops/screens/' + st.dataset.title;
-      count.textContent = String(n + 1).padStart(2, '0') + '/' + String(steps.length).padStart(2, '0');
-      cmd.textContent = st.dataset.cmd;
-    }
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { if (en.isIntersecting) activate(+en.target.dataset.step); });
-    }, { rootMargin: '-48% 0px -48% 0px' });
-    steps.forEach(function (s) { io.observe(s); });
-    // warm the image cache for the sticky frame once the section is near
-    var warm = new IntersectionObserver(function (entries) {
-      if (entries[0].isIntersecting) { shots.forEach(function (s) { s.loading = 'eager'; }); warm.disconnect(); }
-    }, { rootMargin: '600px 0px' });
-    warm.observe($('#sutraops'));
-  }
-
-  /* ---------- counters ---------- */
-  function counters() {
-    var els = $$('.count');
-    if (reduce || !('IntersectionObserver' in window)) return;
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        io.unobserve(en.target);
-        var el = en.target, to = parseFloat(el.dataset.to), dec = +(el.dataset.dec || 0), t0 = null, dur = 1400;
-        (function step(ts) {
-          if (!t0) t0 = ts;
-          var k = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-          el.textContent = (to * e).toFixed(dec);
-          if (k < 1) requestAnimationFrame(step); else el.textContent = to.toFixed(dec);
-        })(performance.now());
+  /* ---------- project filters ---------- */
+  function filters() {
+    var btns = $$('.filter'), cards = $$('.card'), status = $('#filter-status');
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var f = btn.dataset.filter, shown = 0;
+        btns.forEach(function (b) { var on = b === btn; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });
+        cards.forEach(function (c) {
+          var show = f === 'all' || c.dataset.cat.split(' ').indexOf(f) !== -1;
+          if (show) {
+            shown++;
+            if (c.hidden) { c.hidden = false; c.classList.add('in'); if (!reduce) { c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); } }
+          } else { c.hidden = true; }
+        });
+        status.textContent = shown + ' projects shown';
       });
-    }, { threshold: 0.6 });
-    els.forEach(function (e) { e.textContent = (0).toFixed(+(e.dataset.dec || 0)); io.observe(e); });
+    });
   }
 
   /* ---------- scroll-linked: progress, nav, hero parallax, statement, timeline ---------- */
@@ -225,6 +198,17 @@
       linkedin: 'https://www.linkedin.com/in/sam-abishekraj/',
       sutraops: 'https://github.com/Sam-Abishekraj/sutraops'
     };
+    var PROJECTS = [
+      ['sutraops/', LINKS.sutraops, 'enterprise integration AI agent'],
+      ['trueailab-rag-assistant/', 'https://github.com/Sam-Abishekraj/trueailab-rag-assistant', 'TechVerse University RAG assistant'],
+      ['My_Real_Mart_Analysis/', 'https://github.com/Sam-Abishekraj/My_Real_Mart_Analysis', 'retail sales dashboard'],
+      ['Fraud_Sense/', 'https://github.com/Sam-Abishekraj/Fraud_Sense', 'fake job posting detection'],
+      ['sports-quiz-agent/', 'https://github.com/Sam-Abishekraj/sports-quiz-agent', 'RAG sports quiz generator'],
+      ['Credit-Card-Segmentation/', 'https://github.com/Sam-Abishekraj/Credit-Card-Segmentation', 'credit scoring + KMeans'],
+      ['Job-Learning-Path-Recommendation/', 'https://github.com/Sam-Abishekraj/Job-Learning-Path-Recommendation', 'GenAI learning paths'],
+      ['crop-recommendation-project/', 'https://github.com/Sam-Abishekraj/crop-recommendation-project', 'crop recommendation'],
+      ['Building-Efficiency-Prediction-Using-Linear-Regression/', 'https://github.com/Sam-Abishekraj/Building-Efficiency-Prediction-Using-Linear-Regression', 'energy load regression']
+    ];
     function line(text, cls) {
       var p = document.createElement('p');
       if (cls) p.className = cls;
@@ -244,27 +228,22 @@
          '  email        primary contact',
          '  github       open GitHub profile',
          '  linkedin     open LinkedIn profile',
-         '  sutraops     open the flagship project',
          '  projects     list projects',
          '  send <msg>   draft an email to Sam with your message',
          '  clear        clear the screen'].forEach(function (t) { line(t); });
       },
       whoami: function () {
         line('Sam Abishekraj D');
-        line('AI Engineer · Forward Deployed Engineer (entry level)');
+        line('AI / ML Engineer · data science · ML · deep learning · LLMs · agentic AI');
+        line('Looking for: entry-level AI Engineer / Forward Deployed Engineer roles');
         line('Data Science & ML Trainer @ Knowledge Hive Learning Services');
         line('Madurai, Tamil Nadu, India');
       },
       email: function () { var p = line('samabishek7@gmail.com  '); var a = document.createElement('a'); a.href = 'mailto:samabishek7@gmail.com'; a.textContent = '[open mail]'; p.appendChild(a); },
       github: function () { line('opening GitHub…'); window.open(LINKS.github, '_blank', 'noopener'); },
       linkedin: function () { line('opening LinkedIn…'); window.open(LINKS.linkedin, '_blank', 'noopener'); },
-      sutraops: function () { line('opening SutraOps repo…'); window.open(LINKS.sutraops, '_blank', 'noopener'); },
       projects: function () {
-        link('sutraops/', LINKS.sutraops, 'enterprise integration agent (flagship)');
-        link('trueailab-rag-assistant/', 'https://github.com/Sam-Abishekraj/trueailab-rag-assistant', 'TechVerse University RAG assistant');
-        link('Fraud_Sense/', 'https://github.com/Sam-Abishekraj/Fraud_Sense', 'fake job posting & review detection');
-        link('Job-Learning-Path-Recommendation/', 'https://github.com/Sam-Abishekraj/Job-Learning-Path-Recommendation', 'GenAI learning paths');
-        link('crop-recommendation-project/', 'https://github.com/Sam-Abishekraj/crop-recommendation-project', 'ML crop recommendations');
+        PROJECTS.forEach(function (r) { link(r[0], r[1], r[2]); });
       },
       clear: function () { out.textContent = ''; }
     };
@@ -297,8 +276,7 @@
   nav();
   clock();
   contactTerm();
-  story();
-  counters();
+  filters();
   scrollFx();
   boot(function () {
     reveals();
