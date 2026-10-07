@@ -1,1352 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAM ABISHEKRAJ | SAM-OS v2.4.20</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=Bebas+Neue&amp;family=Oxanium:wght@400;700&amp;display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0a0a0a;
-            --terminal-bg: #111111;
-            --card-bg: #1a1a1a;
-            --neon-green: #00ff9f;
-            --cyan: #00f0ff;
-            --amber: #ffbf00;
-            --text: #e0e0e0;
-            --text-dim: #aaaaaa;
-            --border: #333333;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'JetBrains Mono', 'Oxanium', monospace;
-            background-color: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* CRT Scanlines & Grid */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                linear-gradient(rgba(0, 255, 159, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
-            background-size: 4px 4px;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .scanlines {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(
-                transparent,
-                transparent 3px,
-                rgba(0, 0, 0, 0.15) 3px,
-                rgba(0, 0, 0, 0.15) 4px
-            );
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        /* Navbar - OS Style */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: rgba(10, 10, 10, 0.95);
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(12px);
-            padding: 0 2rem;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .logo {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.6rem;
-            letter-spacing: 3px;
-            color: var(--neon-green);
-        }
-
-        .logo span {
-            color: var(--cyan);
-        }
-
-        .version {
-            font-size: 0.7rem;
-            color: var(--amber);
-            margin-left: 0.5rem;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.2s ease;
-            padding: 0.3rem 0.6rem;
-        }
-
-        .nav-links a:hover {
-            color: var(--cyan);
-            text-shadow: 0 0 8px var(--cyan);
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-            font-size: 0.85rem;
-        }
-
-        #clock {
-            color: var(--amber);
-            font-weight: 700;
-            min-width: 92px;
-            text-align: right;
-        }
-
-        .status {
-            color: var(--neon-green);
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status::before {
-            content: '';
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: var(--neon-green);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--neon-green);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* Boot Screen */
-        #boot-screen {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #000000;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--neon-green);
-            padding: 2rem;
-        }
-
-        .boot-container {
-            max-width: 720px;
-            width: 100%;
-        }
-
-        .boot-header {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.8rem;
-            color: var(--amber);
-            margin-bottom: 1.5rem;
-            text-align: center;
-            letter-spacing: 4px;
-        }
-
-        #boot-log {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            padding: 1.5rem;
-            height: 320px;
-            overflow-y: auto;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 1.5rem;
-        }
-
-        #boot-log p {
-            margin-bottom: 4px;
-            opacity: 0.9;
-        }
-
-        .boot-btn {
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 0.7rem 2.2rem;
-            font-family: 'JetBrains Mono', monospace;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: block;
-            margin: 0 auto;
-        }
-
-        .boot-btn:hover {
-            background: var(--neon-green);
-            color: #000;
-            box-shadow: 0 0 15px var(--neon-green);
-        }
-
-        /* Main Content */
-        main {
-            padding-top: 56px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .section {
-            padding: 4rem 2rem;
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-
-        .section-header {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2.2rem;
-            letter-spacing: 4px;
-            margin-bottom: 2rem;
-            color: var(--neon-green);
-            position: relative;
-            display: inline-block;
-        }
-
-        .section-header::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 0;
-            width: 60%;
-            height: 2px;
-            background: linear-gradient(to right, var(--cyan), transparent);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 92vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2rem;
-            position: relative;
-            background: radial-gradient(circle at center, #111 0%, #0a0a0a 70%);
-        }
-
-        .glitch {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: clamp(3.5rem, 9vw, 7rem);
-            font-weight: 400;
-            line-height: 1;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 6px;
-            position: relative;
-            display: inline-block;
-            margin-bottom: 1rem;
-            will-change: transform;
-            backface-visibility: hidden;
-            transform: translateZ(0);
-        }
-
-        .glitch::before,
-        .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transition: all 0.1s ease;
-        }
-
-        .glitch:hover::before {
-            color: var(--cyan);
-            animation: glitch-anim-1 1.5s infinite linear alternate-reverse;
-            clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
-            text-shadow: -3px 0 var(--amber);
-        }
-
-        .glitch:hover::after {
-            color: var(--neon-green);
-            animation: glitch-anim-2 1.2s infinite linear alternate-reverse;
-            clip-path: polygon(0 66%, 100% 66%, 100% 100%, 0 100%);
-            text-shadow: 3px 0 var(--cyan);
-        }
-
-        @keyframes glitch-anim-1 {
-            0% { transform: translate(0); }
-            20% { transform: translate(-3px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(3px, 1px); }
-            80% { transform: translate(2px, -1px); }
-            100% { transform: translate(0); }
-        }
-
-        @keyframes glitch-anim-2 {
-            0% { transform: translate(0); }
-            25% { transform: translate(3px, -2px); }
-            50% { transform: translate(-2px, 2px); }
-            75% { transform: translate(2px, -3px); }
-            100% { transform: translate(0); }
-        }
-
-        .tagline {
-            font-size: 1.1rem;
-            color: var(--text-dim);
-            margin-bottom: 2.5rem;
-            letter-spacing: 3px;
-        }
-
-        /* Mini Terminal in Hero */
-        .mini-terminal {
-            max-width: 620px;
-            margin: 0 auto;
-            background: var(--terminal-bg);
-            border: 1px solid #444;
-            border-radius: 4px;
-            box-shadow: 0 0 30px rgba(0, 255, 159, 0.1);
-            text-align: left;
-        }
-
-        .mini-term-header {
-            background: #222;
-            padding: 0.5rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid #444;
-        }
-
-        .mini-term-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .mini-term-dots span {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
-        .mini-term-dots span:nth-child(1) { background: #ff5f56; }
-        .mini-term-dots span:nth-child(2) { background: #ffbd2e; }
-        .mini-term-dots span:nth-child(3) { background: #27c93f; }
-
-        .mini-term-title {
-            flex: 1;
-            text-align: center;
-            font-size: 0.75rem;
-            color: #888;
-        }
-
-        .mini-term-body {
-            padding: 1.2rem;
-            font-size: 0.92rem;
-            min-height: 110px;
-            color: var(--neon-green);
-            white-space: pre-wrap;
-            line-height: 1.5;
-        }
-
-        .mini-prompt {
-            color: var(--amber);
-        }
-
-        /* Skills Grid */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.25rem;
-        }
-
-        .skill-card {
-            background: var(--card-bg);
-            border: 1px solid #444;
-            padding: 1.4rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .skill-card:hover {
-            border-color: var(--neon-green);
-            box-shadow: 0 0 20px rgba(0, 255, 159, 0.15);
-            transform: translateY(-4px);
-        }
-
-        .skill-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(to right, var(--cyan), var(--neon-green));
-            opacity: 0.6;
-        }
-
-        .skill-card h4 {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.15rem;
-            color: var(--cyan);
-            margin-bottom: 1rem;
-            letter-spacing: 1px;
-        }
-
-        .skill-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .skill-tag {
-            background: rgba(0, 255, 159, 0.08);
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 0.25rem 0.7rem;
-            font-size: 0.75rem;
-            border-radius: 2px;
-            transition: all 0.2s;
-        }
-
-        .skill-tag:hover {
-            background: var(--neon-green);
-            color: #000;
-        }
-
-        /* Timeline */
-        .timeline {
-            position: relative;
-            max-width: 860px;
-            margin: 0 auto;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 28px;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: linear-gradient(#444, var(--neon-green), #444);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 2.5rem;
-            padding-left: 70px;
-        }
-
-        .timeline-dot {
-            position: absolute;
-            left: 18px;
-            top: 8px;
-            width: 22px;
-            height: 22px;
-            background: var(--terminal-bg);
-            border: 3px solid var(--amber);
-            border-radius: 50%;
-            z-index: 2;
-        }
-
-        .timeline-content {
-            background: var(--card-bg);
-            border: 1px solid #444;
-            padding: 1.6rem;
-            border-radius: 4px;
-        }
-
-        .timeline-content:hover {
-            border-color: var(--cyan);
-        }
-
-        .timeline-date {
-            font-family: 'Bebas Neue', sans-serif;
-            color: var(--amber);
-            font-size: 1rem;
-            letter-spacing: 2px;
-            margin-bottom: 0.4rem;
-        }
-
-        .timeline-content h3 {
-            font-size: 1.35rem;
-            color: #fff;
-            margin-bottom: 0.3rem;
-        }
-
-        .timeline-content .company {
-            color: var(--cyan);
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-        }
-
-        .timeline-content ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .timeline-content li {
-            position: relative;
-            padding-left: 1.3rem;
-            margin-bottom: 0.65rem;
-            font-size: 0.95rem;
-            color: var(--text-dim);
-        }
-
-        .timeline-content li::before {
-            content: '>';
-            position: absolute;
-            left: 0;
-            color: var(--neon-green);
-        }
-
-        /* Projects Grid */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .project-card {
-            background: var(--card-bg);
-            border: 1px solid #555;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-            overflow: hidden;
-        }
-
-        .project-card:hover {
-            border-color: var(--cyan);
-            box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1);
-            transform: translateY(-6px);
-        }
-
-        .project-header {
-            padding: 1rem 1.3rem;
-            background: #222;
-            border-bottom: 1px solid #444;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .project-header h3 {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.25rem;
-            color: var(--amber);
-        }
-
-        .project-status {
-            font-size: 0.65rem;
-            padding: 2px 9px;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            border-radius: 2px;
-        }
-
-        .project-body {
-            padding: 1.4rem 1.3rem;
-            flex: 1;
-        }
-
-        .project-body p {
-            font-size: 0.92rem;
-            color: #ccc;
-            line-height: 1.65;
-        }
-
-        .tech-stack {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.4rem;
-            margin-top: 1rem;
-        }
-
-        .tech-pill {
-            font-size: 0.7rem;
-            padding: 2px 9px;
-            background: rgba(0, 240, 255, 0.1);
-            border: 1px solid var(--cyan);
-            color: var(--cyan);
-            border-radius: 2px;
-        }
-
-        .project-footer {
-            padding: 1rem 1.3rem;
-            background: #161616;
-            display: flex;
-            gap: 0.7rem;
-            border-top: 1px solid #333;
-        }
-
-        .neon-btn {
-            flex: 1;
-            text-align: center;
-            padding: 0.55rem 1rem;
-            font-size: 0.78rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            border: 1px solid var(--cyan);
-            color: var(--cyan);
-            text-decoration: none;
-            transition: all 0.2s;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .neon-btn:hover {
-            background: var(--cyan);
-            color: #000;
-            box-shadow: 0 0 12px var(--cyan);
-        }
-
-        /* Contact Terminal */
-        .terminal {
-            max-width: 860px;
-            margin: 0 auto;
-            background: #0f0f0f;
-            border: 2px solid #444;
-            border-radius: 6px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-            overflow: hidden;
-        }
-
-        .term-header {
-            background: #1f1f1f;
-            padding: 0.6rem 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid #444;
-        }
-
-        .term-dots {
-            display: flex;
-            gap: 7px;
-        }
-
-        .term-dots span {
-            width: 13px;
-            height: 13px;
-            border-radius: 50%;
-        }
-
-        .term-dots span:nth-child(1) { background: #ff5f56; }
-        .term-dots span:nth-child(2) { background: #ffbd2e; }
-        .term-dots span:nth-child(3) { background: #27c93f; }
-
-        .term-title {
-            flex: 1;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #888;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .term-body {
-            height: 310px;
-            padding: 1.3rem;
-            overflow-y: auto;
-            font-size: 0.92rem;
-            line-height: 1.55;
-            color: var(--neon-green);
-            background: #0a0a0a;
-        }
-
-        .term-line {
-            margin-bottom: 0.35rem;
-            white-space: pre-wrap;
-        }
-
-        .term-input-line {
-            display: flex;
-            align-items: center;
-            padding: 0.9rem 1.3rem;
-            background: #111;
-            border-top: 1px solid #333;
-        }
-
-        .term-prompt {
-            color: var(--amber);
-            margin-right: 0.5rem;
-            white-space: nowrap;
-        }
-
-        #term-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: var(--neon-green);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.95rem;
-        }
-
-        /* Education compact */
-        .edu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            max-width: 860px;
-            margin: 0 auto;
-        }
-
-        .edu-card {
-            background: var(--card-bg);
-            border: 1px solid #444;
-            padding: 1.3rem;
-        }
-
-        .edu-card h4 {
-            color: var(--amber);
-            margin-bottom: 0.4rem;
-        }
-
-        .edu-card p {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 2.5rem 1rem 3rem;
-            font-size: 0.8rem;
-            color: #666;
-            border-top: 1px solid #222;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .glitch { font-size: 3.2rem; }
-            .section { padding: 3rem 1.2rem; }
-            .projects-grid, .skills-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sam Abishekraj D · AI Engineer · SAM-OS v3.0</title>
+<meta name="description" content="Sam Abishekraj D — AI Engineer and Forward Deployed Engineer from Madurai, India. I wire LLM agents into real business systems: tool calling, RAG, guardrails, human approvals and traces.">
+<meta name="theme-color" content="#04040c">
+<meta property="og:title" content="Sam Abishekraj D · AI Engineer">
+<meta property="og:description" content="I wire LLM agents into real business systems. Flagship: SutraOps, an enterprise integration agent with guardrails, approvals and a real 25-scenario eval.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://resume-ruddy-omega.vercel.app/">
+<meta property="og:image" content="https://resume-ruddy-omega.vercel.app/assets/img/sutraops-01-landing.webp">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2304040c'/%3E%3Ctext x='5' y='22' font-family='monospace' font-size='16' font-weight='700' fill='%23a3dcec'%3E%3E_%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>
+  // Decide on the boot overlay before first paint (once per session, never with reduced motion).
+  (function () {
+    try {
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce && !sessionStorage.getItem('samos-booted')) document.documentElement.classList.add('boot');
+    } catch (e) {}
+    document.documentElement.classList.add('js');
+  })();
+</script>
 </head>
 <body>
-    <!-- BIOS BOOT SCREEN -->
-    <div id="boot-screen">
-        <div class="boot-container">
-            <div class="boot-header">SAM-OS BIOS v2.4.20 — SECURE BOOT</div>
-            <div id="boot-log"></div>
-            <button class="boot-btn" onclick="forceBoot()">FORCE BOOT TO DESKTOP</button>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- BOOT OVERLAY (short, skippable, once per session) -->
+<div id="boot" aria-hidden="true">
+  <div class="boot-box">
+    <div class="boot-head">SAM-OS v3.0 · boot</div>
+    <pre id="boot-log"></pre>
+    <div class="boot-hint">press any key to skip</div>
+  </div>
+</div>
+
+<div class="scroll-progress" aria-hidden="true"><span></span></div>
+<div class="crt" aria-hidden="true"></div>
+
+<!-- NAV -->
+<header class="nav" id="top">
+  <a class="logo" href="#hero" aria-label="SAM-OS home"><span class="logo-mark">&gt;_</span><span>SAM<span class="dim">-OS</span></span><span class="ver">v3.0</span></a>
+  <nav class="nav-links" id="nav-links" aria-label="Sections">
+    <a href="#sutraops">SutraOps</a>
+    <a href="#projects">Projects</a>
+    <a href="#experience">Experience</a>
+    <a href="#skills">Skills</a>
+    <a href="#education">Education</a>
+    <a href="#contact" class="nav-cta">Contact</a>
+  </nav>
+  <div class="nav-right">
+    <span id="clock" class="clock" aria-label="Current time in India"></span>
+    <span class="status"><i></i>open to work</span>
+    <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu"><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============ HERO (marquee hero) ============ -->
+<section class="hero" id="hero" aria-labelledby="hero-title">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="container hero-inner">
+    <p class="eyebrow reveal"><span class="prompt">~/sam-abishekraj</span> AI Engineer · Forward Deployed Engineer · Madurai, India</p>
+    <h1 id="hero-title" class="hero-title">
+      <span class="line"><span>I wire LLM agents</span></span>
+      <span class="line"><span>into <em>real business</em></span></span>
+      <span class="line"><span>systems.</span></span>
+    </h1>
+
+    <div class="hero-grid">
+      <div class="hero-copy reveal">
+        <div class="type-line" aria-label="sutraops --connect crm sql rag notify mcp">
+          <span class="prompt">sam@sam-os:~$</span> <span id="type-text" aria-hidden="true"></span><span class="caret" aria-hidden="true"></span>
         </div>
+        <p class="lead">Entry-level AI engineer building agents that call real tools, respect guardrails, wait for a human when the stakes are high, and leave a trace of every step. I also train the next batch of data scientists.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#sutraops">See SutraOps <span aria-hidden="true">↓</span></a>
+          <a class="btn" href="mailto:samabishek7@gmail.com">samabishek7@gmail.com</a>
+          <a class="btn btn-ghost" href="https://github.com/Sam-Abishekraj" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+      </div>
+
+      <div class="term whoami reveal" style="--d:.12s">
+        <div class="term-bar"><i></i><i></i><i></i><span>~/whoami</span></div>
+        <div class="term-body">
+          <div class="who-top">
+            <img src="assets/img/sam.webp" width="96" height="96" alt="Portrait of Sam Abishekraj D" class="avatar" fetchpriority="high">
+            <div>
+              <div class="who-name">Sam Abishekraj D</div>
+              <div class="who-role">AI Engineer · FDE track</div>
+            </div>
+          </div>
+          <dl class="kv">
+            <div><dt>base</dt><dd>Madurai, Tamil Nadu, IN</dd></div>
+            <div><dt>now</dt><dd>DS &amp; ML Trainer @ Knowledge Hive</dd></div>
+            <div><dt>building</dt><dd>LLM agents · RAG · tool calling</dd></div>
+            <div><dt>flagship</dt><dd><a href="https://github.com/Sam-Abishekraj/sutraops" target="_blank" rel="noopener">sutraops</a> <span class="ok">22/25 eval ✓</span></dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+  <a href="#connects" class="scroll-cue" aria-label="Scroll to next section"><span></span></a>
+</section>
+
+<!-- ============ LOGO CLOUD / CONNECTS-TO MARQUEE ============ -->
+<section class="cloud" id="connects" aria-label="Systems and tools I work with">
+  <p class="cloud-label container"><span class="prompt">$</span> ls ~/integrations <span class="dim">— systems my agents talk to</span></p>
+  <div class="marquee">
+    <ul class="marquee-track">
+      <li>REST CRM</li><li>Ticketing API</li><li>Read-only SQL</li><li>SQLite</li><li>RAG</li><li>FAISS</li><li>Local embeddings</li><li>Slack</li><li>Email</li><li>MCP</li><li>Groq</li><li>gpt-oss-120b</li><li>Gemini API</li><li>Flask</li><li>FastAPI</li><li>pytest</li><li>LightGBM</li><li>Vercel</li><li>Railway</li>
+    </ul>
+    <ul class="marquee-track" aria-hidden="true">
+      <li>REST CRM</li><li>Ticketing API</li><li>Read-only SQL</li><li>SQLite</li><li>RAG</li><li>FAISS</li><li>Local embeddings</li><li>Slack</li><li>Email</li><li>MCP</li><li>Groq</li><li>gpt-oss-120b</li><li>Gemini API</li><li>Flask</li><li>FastAPI</li><li>pytest</li><li>LightGBM</li><li>Vercel</li><li>Railway</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ STATEMENT (scroll-lit words) ============ -->
+<section class="statement container" aria-label="What I build">
+  <p class="statement-kicker"><span class="prompt">#</span> cat manifesto.txt</p>
+  <p class="statement-text" id="statement">Most AI demos stop at the chat box. I build what comes after: the tool calls, the guardrails, the human approvals and the traces that let a business actually trust an agent with its systems.</p>
+</section>
+
+<!-- ============ SUTRAOPS SCROLL STORY ============ -->
+<section class="story" id="sutraops" aria-labelledby="sutra-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow"><span class="prompt">01</span> Flagship project</p>
+      <h2 id="sutra-title">SutraOps</h2>
+      <p class="section-sub">An enterprise integration AI agent for a fictional Indian D2C brand, wired to five business systems through a hand-written Groq tool-calling loop.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/Sam-Abishekraj/sutraops" target="_blank" rel="noopener">View the repo ↗</a>
+        <a class="btn btn-ghost" href="#eval">Jump to eval results</a>
+      </div>
     </div>
 
-    <!-- NAVBAR -->
-    <nav>
-        <div class="nav-left">
-            <div class="logo"><span>SAM</span>-OS <span class="version">v2.4.20</span></div>
+    <div class="story-grid">
+      <div class="story-media" aria-hidden="true">
+        <div class="term story-frame">
+          <div class="term-bar"><i></i><i></i><i></i><span id="frame-title">~/sutraops/screens/01-landing</span><b id="frame-count">01/06</b></div>
+          <div class="frame-stage">
+            <img class="shot is-active" data-step="0" src="assets/img/sutraops-01-landing.webp" width="1440" height="900" alt="">
+            <img class="shot" data-step="1" src="assets/img/sutraops-02-console-injection-approval.webp" width="1440" height="1257" alt="" loading="lazy">
+            <img class="shot" data-step="2" src="assets/img/sutraops-03-dashboard-approvals.webp" width="1440" height="1150" alt="" loading="lazy">
+            <img class="shot" data-step="3" src="assets/img/sutraops-04-dashboard-traces.webp" width="1376" height="621" alt="" loading="lazy">
+            <img class="shot" data-step="4" src="assets/img/sutraops-06-console-hindi.webp" width="1440" height="1257" alt="" loading="lazy">
+            <img class="shot" data-step="5" src="assets/img/sutraops-05-dashboard-models-outbox.webp" width="1376" height="326" alt="" loading="lazy">
+          </div>
+          <div class="frame-foot"><span class="prompt">$</span> <span id="frame-cmd">open console</span><span class="dots" id="frame-dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></span></div>
         </div>
-        
-        <div class="nav-links">
-            <a href="#skills">SKILLS</a>
-            <a href="#experience">EXPERIENCE</a>
-            <a href="#projects">PROJECTS</a>
-            <a href="#education">EDUCATION</a>
-            <a href="#contact">CONTACT</a>
+      </div>
+
+      <ol class="story-steps">
+        <li class="step is-active" data-step="0" data-title="01-landing" data-cmd="open console">
+          <span class="step-no">00 · overview</span>
+          <h3>An agent that works inside the company's systems.</h3>
+          <p>SutraOps connects one LLM to a <strong>REST CRM/ticketing API</strong>, a <strong>guarded read-only SQL</strong> tool, <strong>multilingual RAG</strong> over company SOPs, <strong>Slack/email notifications</strong> and an <strong>MCP server</strong>. No agent framework: the tool-calling loop is hand-written.</p>
+          <img class="step-img" src="assets/img/sutraops-01-landing.webp" width="1440" height="900" alt="SutraOps landing page: AI agents that work inside your systems, wired into five client systems" loading="lazy">
+        </li>
+        <li class="step" data-step="1" data-title="02-console-injection-approval" data-cmd="trace --flag tool_output_injection">
+          <span class="step-no">01 · injection blocked</span>
+          <h3>Hostile text gets redacted before the model reads it.</h3>
+          <p>A support ticket hides instructions aimed at the AI. SutraOps flags the tool output, redacts the injected text, and the refund it pushes for still lands in a human approval queue instead of being paid.</p>
+          <img class="step-img" src="assets/img/sutraops-02-console-injection-approval.webp" width="1440" height="1257" alt="SutraOps console flagging a prompt injection in ticket TCK-7004 and holding the refund for human approval" loading="lazy">
+        </li>
+        <li class="step" data-step="2" data-title="03-dashboard-approvals" data-cmd="approvals --pending">
+          <span class="step-no">02 · human in the loop</span>
+          <h3>Risky actions wait for a person.</h3>
+          <p>Refunds above <strong>₹2,000</strong> and account changes go to an approvals queue that a team lead approves or rejects from the dashboard. The agent is also checked for <strong>claiming actions it never actually performed</strong>.</p>
+          <img class="step-img" src="assets/img/sutraops-03-dashboard-approvals.webp" width="1440" height="1150" alt="SutraOps admin dashboard with the approvals queue and tool-call health" loading="lazy">
+        </li>
+        <li class="step" data-step="3" data-title="04-dashboard-traces" data-cmd="traces --run latest">
+          <span class="step-no">03 · live traces</span>
+          <h3>Every step, accounted for.</h3>
+          <p>Each LLM call and tool call is traced with its arguments, results, tokens and latency in a <strong>Flask + vanilla JS</strong> admin dashboard. Personal data is masked everywhere, and SQL is limited to a whitelist of tables.</p>
+          <img class="step-img" src="assets/img/sutraops-04-dashboard-traces.webp" width="1376" height="621" alt="SutraOps recent traces and a step-by-step trace of one agent run" loading="lazy">
+        </li>
+        <li class="step" data-step="4" data-title="06-console-hindi" data-cmd="ask --lang hi">
+          <span class="step-no">04 · multilingual</span>
+          <h3>English, Tamil and Hindi.</h3>
+          <p>Policy questions are answered from the company's SOPs using <strong>local embeddings + FAISS</strong>, in the language the customer wrote in, with the source document cited.</p>
+          <img class="step-img" src="assets/img/sutraops-06-console-hindi.webp" width="1440" height="1257" alt="SutraOps answering a warranty question in Hindi using the SOP knowledge base" loading="lazy">
+        </li>
+        <li class="step" data-step="5" data-title="05-dashboard-models-outbox" data-cmd="models --fallback">
+          <span class="step-no">05 · built for free-tier limits</span>
+          <h3>Rate limits don't take it down.</h3>
+          <p>Runs on <strong>Groq gpt-oss-120b</strong> with automatic fallback to <strong>gpt-oss-20b</strong> on rate limits, plus response caching, backoff and a demo replay mode. Notifications land in a mock email/Slack outbox, and guardrail events are logged.</p>
+          <img class="step-img" src="assets/img/sutraops-05-dashboard-models-outbox.webp" width="1376" height="326" alt="SutraOps models and tokens panel, notification outbox and guardrail events" loading="lazy">
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVAL STRIP ============ -->
+<section class="eval" id="eval" aria-labelledby="eval-title">
+  <div class="container">
+    <div class="eval-head reveal">
+      <p class="eyebrow"><span class="prompt">#</span> eval report · 25 scenarios · en / ta / hi</p>
+      <h2 id="eval-title">Measured, not claimed.</h2>
+      <p class="section-sub">A real 25-scenario evaluation of SutraOps in English, Tamil and Hindi, run on Groq's free tier.</p>
+    </div>
+    <div class="stats">
+      <div class="stat reveal"><div class="stat-num"><span class="count" data-to="88">88</span>%</div><div class="stat-label">end-to-end task success<span>22 / 25 scenarios</span></div></div>
+      <div class="stat reveal" style="--d:.06s"><div class="stat-num"><span class="count" data-to="92">92</span>%</div><div class="stat-label">right-tool accuracy<span>picked the correct tool</span></div></div>
+      <div class="stat reveal" style="--d:.12s"><div class="stat-num"><span class="count" data-to="100">100</span>%</div><div class="stat-label">valid tool calls<span>33 / 33</span></div></div>
+      <div class="stat reveal" style="--d:.18s"><div class="stat-num"><span class="count" data-to="1.1" data-dec="1">1.1</span>s</div><div class="stat-label">median latency<span>Groq free tier</span></div></div>
+      <div class="stat reveal" style="--d:.24s"><div class="stat-num"><span class="count" data-to="56">56</span></div><div class="stat-label">automated tests<span>pytest</span></div></div>
+    </div>
+
+    <div class="guard-grid">
+      <div class="term reveal">
+        <div class="term-bar"><i></i><i></i><i></i><span>~/sutraops/guardrails</span></div>
+        <div class="term-body mono-list">
+          <p><span class="ok">[on]</span> prompt-injection redaction on tool outputs</p>
+          <p><span class="ok">[on]</span> PII masking across traces and notifications</p>
+          <p><span class="ok">[on]</span> read-only SQL with a table whitelist</p>
+          <p><span class="ok">[on]</span> human approval for refunds above ₹2,000</p>
+          <p><span class="ok">[on]</span> detection of claimed-but-not-done actions</p>
         </div>
-        
-        <div class="nav-right">
-            <span id="clock"></span>
-            <span class="status">SECURE</span>
+      </div>
+      <div class="term reveal" style="--d:.1s">
+        <div class="term-bar"><i></i><i></i><i></i><span>~/sutraops/stack</span></div>
+        <div class="term-body mono-list">
+          <p><span class="key">llm</span>      Groq gpt-oss-120b → gpt-oss-20b fallback</p>
+          <p><span class="key">tools</span>    CRM/ticketing API · SQL · RAG · notify · MCP</p>
+          <p><span class="key">rag</span>      local embeddings + FAISS over SOPs</p>
+          <p><span class="key">app</span>      Flask + vanilla JS console &amp; dashboard</p>
+          <p><span class="key">quality</span>  25-scenario eval · 56 pytest tests</p>
         </div>
-    </nav>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <main id="main-content" style="display: none;">
-        <!-- HERO -->
-        <section class="hero">
-            <div>
-                <h1 class="glitch" data-text="SAM ABISHEKRAJ D">SAM ABISHEKRAJ D</h1>
-                <p class="tagline">AI/ML PRACTITIONER • SYSTEM ARCHITECT • BUILDER OF INTELLIGENT AGENTS</p>
-                
-                <!-- Mini Typing Terminal -->
-                <div class="mini-terminal">
-                    <div class="mini-term-header">
-                        <div class="mini-term-dots">
-                            <span></span><span></span><span></span>
-                        </div>
-                        <div class="mini-term-title">/etc/motd — welcome.txt</div>
-                    </div>
-                    <div class="mini-term-body" id="hero-terminal">
-                        <span class="mini-prompt">guest@sam-os:~$ </span><span id="typing-text"></span><span class="cursor">█</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+<!-- ============ OTHER PROJECTS ============ -->
+<section class="projects" id="projects" aria-labelledby="projects-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow"><span class="prompt">02</span> More projects</p>
+      <h2 id="projects-title">Shipped before SutraOps.</h2>
+    </div>
+    <div class="proj-grid">
+      <article class="proj reveal">
+        <div class="term-bar"><i></i><i></i><i></i><span>~/projects/techverse</span><b class="badge live">live</b></div>
+        <div class="proj-body">
+          <h3>TechVerse University RAG Assistant</h3>
+          <p>A Retrieval-Augmented Generation assistant for university policy questions. FAISS vector search and embedding pipelines feed the Gemini API, served by a FastAPI backend with conversational memory and deployed on Railway + Vercel.</p>
+          <ul class="tags"><li>Python</li><li>FastAPI</li><li>FAISS</li><li>Gemini API</li><li>RAG</li><li>Railway</li><li>Vercel</li></ul>
+        </div>
+        <div class="proj-foot">
+          <a class="btn btn-primary btn-sm" href="https://trueailab-rag-assistant-nine.vercel.app" target="_blank" rel="noopener">Live demo ↗</a>
+          <a class="btn btn-sm" href="https://github.com/Sam-Abishekraj/trueailab-rag-assistant" target="_blank" rel="noopener">Code ↗</a>
+        </div>
+      </article>
+      <article class="proj reveal" style="--d:.1s">
+        <div class="term-bar"><i></i><i></i><i></i><span>~/projects/fraudsense</span><b class="badge">ml</b></div>
+        <div class="proj-body">
+          <h3>FraudSense</h3>
+          <p>An NLP fraud-detection pipeline for fake job postings and reviews. TF-IDF + SVD for feature extraction, with an ensemble of LightGBM and a neural network for the final prediction.</p>
+          <ul class="tags"><li>Python</li><li>NLP</li><li>TF-IDF + SVD</li><li>LightGBM</li><li>Neural network</li><li>Scikit-learn</li></ul>
+        </div>
+        <div class="proj-foot">
+          <a class="btn btn-sm" href="https://github.com/Sam-Abishekraj/Fraud_Sense" target="_blank" rel="noopener">Code ↗</a>
+        </div>
+      </article>
+    </div>
 
-        <!-- SKILLS -->
-        <section id="skills" class="section">
-            <h2 class="section-header">SKILL MATRIX — LOADED MODULES</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <h4>PROGRAMMING &amp; DATA</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">MySQL</span>
-                        <span class="skill-tag">Pandas</span>
-                        <span class="skill-tag">NumPy</span>
-                        <span class="skill-tag">Data Wrangling</span>
-                        <span class="skill-tag">Data Analysis</span>
-                    </div>
-                </div>
-                <div class="skill-card">
-                    <h4>MACHINE LEARNING</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Scikit-learn</span>
-                        <span class="skill-tag">LightGBM</span>
-                        <span class="skill-tag">Keras</span>
-                        <span class="skill-tag">Feature Engineering</span>
-                        <span class="skill-tag">Model Evaluation</span>
-                    </div>
-                </div>
-                <div class="skill-card">
-                    <h4>LLMs &amp; AGENT SYSTEMS</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Prompt Engineering</span>
-                        <span class="skill-tag">RAG Architectures</span>
-                        <span class="skill-tag">Vector Search (FAISS)</span>
-                        <span class="skill-tag">LLM Integrations</span>
-                        <span class="skill-tag">Embedding Pipelines</span>
-                    </div>
-                </div>
-                <div class="skill-card">
-                    <h4>AI INFRASTRUCTURE</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">FastAPI</span>
-                        <span class="skill-tag">Flask</span>
-                        <span class="skill-tag">Streamlit</span>
-                        <span class="skill-tag">REST APIs</span>
-                        <span class="skill-tag">Workflow Automation</span>
-                        <span class="skill-tag">MLOps</span>
-                    </div>
-                </div>
-                <div class="skill-card">
-                    <h4>TOOLS &amp; PLATFORMS</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Git / GitHub</span>
-                        <span class="skill-tag">Linux (Pop!_OS)</span>
-                        <span class="skill-tag">Railway</span>
-                        <span class="skill-tag">Vercel</span>
-                        <span class="skill-tag">Hugging Face</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <div class="term other reveal">
+      <div class="term-bar"><i></i><i></i><i></i><span>~/projects/other</span></div>
+      <div class="term-body">
+        <p class="cmd"><span class="prompt">$</span> ls -1 ~/projects/other</p>
+        <a class="other-row" href="https://github.com/Sam-Abishekraj/Job-Learning-Path-Recommendation" target="_blank" rel="noopener"><span class="o-name">job-learning-path-recommender/</span><span class="o-desc">GenAI app that recommends learning paths and resources for job roles · Python · LLM · Flask</span><span class="o-go">↗</span></a>
+        <a class="other-row" href="https://github.com/Sam-Abishekraj/crop-recommendation-project" target="_blank" rel="noopener"><span class="o-name">crop-recommendation-system/</span><span class="o-desc">ML crop suggestions from soil nutrients and weather data, with a Flask web interface · Scikit-learn</span><span class="o-go">↗</span></a>
+      </div>
+    </div>
+  </div>
+</section>
 
-        <!-- EXPERIENCE TIMELINE -->
-        <section id="experience" class="section">
-            <h2 class="section-header">MISSION LOGS — EXPERIENCE</h2>
-            <div class="timeline">
-                <!-- Job 1 -->
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-date">SEP 2025 — PRESENT</div>
-                        <h3>Data Science &amp; ML Trainer</h3>
-                        <p class="company">Knowledge Hive Learning Services</p>
-                        <ul>
-                            <li>Architected and delivered a structured Data Science &amp; ML curriculum covering Python, SQL, end-to-end ML workflows, and deployment concepts to aspiring engineers.</li>
-                            <li>Mentored 40+ students in designing modular ML systems and real-world AI applications, with multiple projects advancing to functional prototypes.</li>
-                            <li>Guided learners on applied machine learning best practices, workflow automation, and practical cloud deployment strategies.</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- Job 2 -->
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-date">JUL 2025</div>
-                        <h3>AI / ML Intern</h3>
-                        <p class="company">Kodacy</p>
-                        <ul>
-                            <li>Built robust end-to-end machine learning pipelines using Scikit-learn, including data preprocessing, feature engineering, and rigorous model evaluation.</li>
-                            <li>Developed interactive Streamlit dashboards for model experimentation and stakeholder-friendly prediction interfaces.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
+<!-- ============ EXPERIENCE ============ -->
+<section class="experience" id="experience" aria-labelledby="exp-title">
+  <div class="container exp-wrap">
+    <div class="section-head sticky-head reveal">
+      <p class="eyebrow"><span class="prompt">03</span> Experience</p>
+      <h2 id="exp-title">Mission log.</h2>
+      <p class="section-sub">Teaching data science full-time, then part-time while I build agents.</p>
+    </div>
+    <ol class="timeline" id="timeline">
+      <li class="tl-fill" aria-hidden="true"><span></span></li>
+      <li class="tl-item reveal">
+        <div class="tl-date">Sep 2025 — Present</div>
+        <h3>Data Science &amp; ML Trainer</h3>
+        <p class="tl-org">Knowledge Hive Learning Services <span class="dim">· full-time Sep–Dec 2025, part-time since Jan 2026</span></p>
+        <ul>
+          <li>Built and delivered a structured Data Science &amp; ML curriculum covering Python, SQL, end-to-end ML workflows and deployment concepts for aspiring engineers.</li>
+          <li>Mentored 40+ students in designing modular ML systems and real-world AI applications, with multiple projects advancing to functional prototypes.</li>
+          <li>Guided learners on applied machine learning best practices, workflow automation and practical cloud deployment.</li>
+        </ul>
+      </li>
+      <li class="tl-item reveal">
+        <div class="tl-date">Jul 2025</div>
+        <h3>AI / ML Intern</h3>
+        <p class="tl-org">Kodacy</p>
+        <ul>
+          <li>Built end-to-end machine learning pipelines with Scikit-learn, including data preprocessing, feature engineering and model evaluation.</li>
+          <li>Developed interactive Streamlit dashboards for model experimentation and stakeholder-friendly prediction interfaces.</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</section>
 
-        <!-- PROJECTS -->
-        <section id="projects" class="section">
-            <h2 class="section-header">DEPLOYED ASSETS — PROJECT ARCHIVE</h2>
-            <div class="projects-grid">
-                <!-- Project 1 -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>TechVerse RAG Assistant</h3>
-                        <span class="project-status">LIVE</span>
-                    </div>
-                    <div class="project-body">
-                        <p>Engineered a production-grade Retrieval-Augmented Generation assistant for university policy queries using FAISS vector search and embedding pipelines. Integrated Google Gemini and deployed FastAPI backend with conversational memory.</p>
-                        <div class="tech-stack">
-                            <span class="tech-pill">Python</span>
-                            <span class="tech-pill">FAISS</span>
-                            <span class="tech-pill">FastAPI</span>
-                            <span class="tech-pill">Gemini</span>
-                            <span class="tech-pill">RAG</span>
-                        </div>
-                    </div>
-                    <div class="project-footer">
-                        <a href="https://github.com/Sam-Abishekraj/trueailab-rag-assistant" target="_blank" class="neon-btn">[ VIEW CODE ]</a>
-                    </div>
-                </div>
+<!-- ============ SKILLS ============ -->
+<section class="skills" id="skills" aria-labelledby="skills-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow"><span class="prompt">04</span> Skills</p>
+      <h2 id="skills-title">Loaded modules.</h2>
+    </div>
+    <div class="skill-grid">
+      <div class="skill reveal"><h3><span class="prompt">&gt;</span> LLMs &amp; agents</h3><ul class="tags"><li>Tool calling (Groq)</li><li>MCP</li><li>RAG architectures</li><li>Vector search (FAISS)</li><li>Embedding pipelines</li><li>Prompt engineering</li><li>Guardrails</li><li>Human-in-the-loop</li><li>LLM evals</li></ul></div>
+      <div class="skill reveal" style="--d:.05s"><h3><span class="prompt">&gt;</span> Programming &amp; data</h3><ul class="tags"><li>Python</li><li>SQL / MySQL</li><li>SQLite</li><li>Pandas</li><li>NumPy</li><li>Data wrangling</li><li>Data analysis</li></ul></div>
+      <div class="skill reveal" style="--d:.1s"><h3><span class="prompt">&gt;</span> Machine learning</h3><ul class="tags"><li>Scikit-learn</li><li>LightGBM</li><li>Keras</li><li>Feature engineering</li><li>Model evaluation</li><li>NLP (TF-IDF, SVD)</li></ul></div>
+      <div class="skill reveal" style="--d:.15s"><h3><span class="prompt">&gt;</span> AI infrastructure</h3><ul class="tags"><li>FastAPI</li><li>Flask</li><li>Streamlit</li><li>REST APIs</li><li>pytest</li><li>Workflow automation</li><li>MLOps</li></ul></div>
+      <div class="skill reveal" style="--d:.2s"><h3><span class="prompt">&gt;</span> Tools &amp; platforms</h3><ul class="tags"><li>Git / GitHub</li><li>Linux (Pop!_OS)</li><li>Vercel</li><li>Railway</li><li>Hugging Face</li></ul></div>
+    </div>
+  </div>
+</section>
 
-                <!-- Project 2 -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>FraudSense</h3>
-                        <span class="project-status">LIVE</span>
-                    </div>
-                    <div class="project-body">
-                        <p>Designed an NLP-based fraud detection pipeline on job postings and reviews. Applied TF-IDF + SVD for feature extraction and trained ensembles using LightGBM and Neural Networks.</p>
-                        <div class="tech-stack">
-                            <span class="tech-pill">Python</span>
-                            <span class="tech-pill">NLP</span>
-                            <span class="tech-pill">LightGBM</span>
-                            <span class="tech-pill">Scikit-learn</span>
-                        </div>
-                    </div>
-                    <div class="project-footer">
-                        <a href="https://github.com/Sam-Abishekraj/Fraud_Sense" target="_blank" class="neon-btn">[ VIEW CODE ]</a>
-                    </div>
-                </div>
+<!-- ============ EDUCATION & CERTS ============ -->
+<section class="education" id="education" aria-labelledby="edu-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow"><span class="prompt">05</span> Education</p>
+      <h2 id="edu-title">Archive.</h2>
+    </div>
+    <div class="edu-grid">
+      <div class="edu reveal">
+        <div class="edu-yr">2025 — Present</div>
+        <h3>M.Sc Computer Science <span class="dim">(Correspondence)</span></h3>
+        <p>Madurai Kamaraj University</p>
+      </div>
+      <div class="edu reveal" style="--d:.08s">
+        <div class="edu-yr">CGPA 8.7</div>
+        <h3>B.Sc Data Science</h3>
+        <p>The American College, Madurai</p>
+      </div>
+    </div>
+    <div class="term certs reveal">
+      <div class="term-bar"><i></i><i></i><i></i><span>~/certifications</span></div>
+      <div class="term-body">
+        <p class="cmd"><span class="prompt">$</span> cat certifications.txt</p>
+        <ul class="cert-list">
+          <li>MTA 98-381 · Python</li>
+          <li>IBM AI Developer</li>
+          <li>IBM Generative AI &amp; Prompt Engineering</li>
+          <li>Statistics with Python · University of Michigan</li>
+          <li>AWS Educate: Generative AI</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
 
-                <!-- Project 3 -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>Heart Disease Classifier</h3>
-                        <span class="project-status">LIVE</span>
-                    </div>
-                    <div class="project-body">
-                        <p>Built a complete end-to-end ML application from preprocessing to deployment. Developed a Flask prediction interface with strong feature engineering and cross-validation for reliable clinical decision support.</p>
-                        <div class="tech-stack">
-                            <span class="tech-pill">Python</span>
-                            <span class="tech-pill">Flask</span>
-                            <span class="tech-pill">Scikit-learn</span>
-                            <span class="tech-pill">ML</span>
-                        </div>
-                    </div>
-                    <div class="project-footer">
-                        <a href="https://github.com/Sam-Abishekraj/Heart-Disease-Classification" target="_blank" class="neon-btn">[ VIEW CODE ]</a>
-                    </div>
-                </div>
+<!-- ============ CONTACT CTA ============ -->
+<section class="contact" id="contact" aria-labelledby="contact-title">
+  <div class="contact-glow" aria-hidden="true"></div>
+  <div class="container">
+    <p class="eyebrow reveal"><span class="prompt">06</span> Contact</p>
+    <h2 id="contact-title" class="contact-title reveal">Have a system that needs an agent? <em>Let's talk.</em></h2>
+    <p class="section-sub reveal">Open to entry-level AI Engineer and Forward Deployed Engineer roles.</p>
+    <div class="cta-row reveal">
+      <a class="btn btn-primary btn-lg" href="mailto:samabishek7@gmail.com">samabishek7@gmail.com</a>
+      <a class="btn btn-lg" href="https://github.com/Sam-Abishekraj" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="btn btn-lg btn-ghost" href="https://www.linkedin.com/in/sam-abishekraj/" target="_blank" rel="noopener">LinkedIn ↗</a>
+    </div>
 
-                <!-- Project 4: Job Learning Path -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>Job Learning Path Recommender</h3>
-                        <span class="project-status">LIVE</span>
-                    </div>
-                    <div class="project-body">
-                        <p>Versatile GenAI project that recommends personalized learning paths and resources for different job roles using large language models. Helps users efficiently upskill and plan their career trajectory with tailored recommendations.</p>
-                        <div class="tech-stack">
-                            <span class="tech-pill">Python</span>
-                            <span class="tech-pill">GenAI</span>
-                            <span class="tech-pill">LLM</span>
-                            <span class="tech-pill">Flask</span>
-                        </div>
-                    </div>
-                    <div class="project-footer">
-                        <a href="https://github.com/Sam-Abishekraj/Job-Learning-Path-Recommendation" target="_blank" class="neon-btn">[ VIEW CODE ]</a>
-                    </div>
-                </div>
+    <div class="term contact-term reveal">
+      <div class="term-bar"><i></i><i></i><i></i><span>guest@sam-os: ~/contact.sh</span></div>
+      <div class="term-body" id="term-out" role="log" aria-live="polite" aria-label="Contact terminal output"></div>
+      <div class="term-chips" aria-label="Quick commands">
+        <button type="button" data-cmd="whoami">whoami</button><button type="button" data-cmd="projects">projects</button><button type="button" data-cmd="email">email</button><button type="button" data-cmd="help">help</button>
+      </div>
+      <form class="term-input" id="term-form" autocomplete="off">
+        <label for="term-in" class="prompt">guest@sam-os:~$</label>
+        <input id="term-in" type="text" spellcheck="false" placeholder="type help" aria-describedby="term-hint">
+        <span id="term-hint" class="sr-only">Commands: help, whoami, email, github, linkedin, projects, sutraops, send followed by a message, clear.</span>
+      </form>
+    </div>
+  </div>
+</section>
 
-                <!-- Project 5: Crop Recommendation -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>Crop Recommendation System</h3>
-                        <span class="project-status">LIVE</span>
-                    </div>
-                    <div class="project-body">
-                        <p>ML-powered crop recommendation system that suggests optimal crops based on soil nutrients, weather conditions, and environmental data. Features an interactive Flask web interface for real-time predictions and decision support.</p>
-                        <div class="tech-stack">
-                            <span class="tech-pill">Python</span>
-                            <span class="tech-pill">Scikit-learn</span>
-                            <span class="tech-pill">Flask</span>
-                            <span class="tech-pill">ML</span>
-                        </div>
-                    </div>
-                    <div class="project-footer">
-                        <a href="https://github.com/Sam-Abishekraj/crop-recommendation-project" target="_blank" class="neon-btn">[ VIEW CODE ]</a>
-                    </div>
-                </div>
-            </div>
-        </section>
+</main>
 
-        <!-- EDUCATION -->
-        <section id="education" class="section">
-            <h2 class="section-header">EDUCATION ARCHIVE</h2>
-            <div class="edu-grid">
-                <div class="edu-card">
-                    <h4>M.Sc Computer Science (Correspondence)</h4>
-                    <p>Madurai Kamaraj University • 2025 — Present</p>
-                </div>
-                <div class="edu-card">
-                    <h4>B.Sc Data Science</h4>
-                    <p>The American College, Madurai • CGPA: 8.7</p>
-                </div>
-            </div>
-            
-            <div style="max-width: 860px; margin: 2.5rem auto 0; text-align: center; font-size: 0.85rem; color: #777;">
-                CERTIFICATIONS: MTA 98-381 Python • IBM AI Developer • IBM Generative AI &amp; Prompt Engineering • Statistics with Python (U Michigan) • AWS Educate: Generative AI
-            </div>
-        </section>
+<footer class="footer">
+  <div class="container foot-inner">
+    <span>© 2026 Sam Abishekraj D · Madurai, Tamil Nadu</span>
+    <span class="dim">SAM-OS v3.0 · plain HTML, CSS &amp; JS · <a href="#hero">back to top ↑</a></span>
+  </div>
+</footer>
 
-        <!-- CONTACT TERMINAL -->
-        <section id="contact" class="section">
-            <h2 class="section-header">SECURE CONTACT TERMINAL</h2>
-            <div class="terminal">
-                <div class="term-header">
-                    <div class="term-dots">
-                        <span></span><span></span><span></span>
-                    </div>
-                    <div class="term-title">root@sam-os:/secure/contact.sh</div>
-                </div>
-                
-                <div class="term-body" id="term-body"></div>
-                
-                <div class="term-input-line">
-                    <span class="term-prompt">root@sam-os:~$ </span>
-                    <input type="text" id="term-input" placeholder="Type command... (help for list)" autocomplete="off">
-                </div>
-            </div>
-        </section>
-
-        <footer>
-            © 2026 SAM ABISHEKRAJ D — SYSTEM ONLINE • ALL CONNECTIONS ENCRYPTED • MADURAI, TAMIL NADU
-        </footer>
-    </main>
-
-    <script>
-        // ========== BOOT SEQUENCE ==========
-        function startBootSequence() {
-            const bootLog = document.getElementById('boot-log');
-            const bootScreen = document.getElementById('boot-screen');
-            const mainContent = document.getElementById('main-content');
-
-            const bootLines = [
-                "[BIOS] Phoenix SecureCore Technology 6.0 — 2026",
-                "[CPU] Intel Core i9-13900K @ 3.20GHz — 24 Cores — OK",
-                "[RAM] 16384 MB DDR5-6000 — Detected & Verified",
-                "[STORAGE] NVMe SSD 2TB — Samsung 990 PRO — Health: 98%",
-                "[NET] Establishing encrypted uplink to github.com...",
-                "[NET] Secure tunnel established. GitHub: Sam-Abishekraj",
-                "[AI] Loading neural weights for RAG & LLM modules...",
-                "[AI] Vector store (FAISS) mounted successfully.",
-                "[OS] Mounting /projects/volume...",
-                "[OS] Loading SAM-OS kernel modules: ml-core, rag-engine, terminal",
-                "[SEC] Quantum-resistant encryption layer active.",
-                "[SEC] All subsystems nominal. No anomalies detected.",
-                "",
-                "System boot complete. Initializing graphical interface...",
-                "Welcome, operator. Press any key or click FORCE BOOT."
-            ];
-
-            let lineIndex = 0;
-
-            function addBootLine() {
-                if (lineIndex < bootLines.length) {
-                    const p = document.createElement('p');
-                    p.textContent = bootLines[lineIndex];
-                    if (bootLines[lineIndex].includes("OK") || bootLines[lineIndex].includes("complete")) {
-                        p.style.color = '#00ff9f';
-                    } else if (bootLines[lineIndex].includes("SEC") || bootLines[lineIndex].includes("encrypted")) {
-                        p.style.color = '#ffbf00';
-                    }
-                    bootLog.appendChild(p);
-                    bootLog.scrollTop = bootLog.scrollHeight;
-                    lineIndex++;
-                    setTimeout(addBootLine, 180);
-                } else {
-                    // Boot finished
-                    setTimeout(() => {
-                        bootScreen.style.transition = 'opacity 0.6s ease';
-                        bootScreen.style.opacity = '0';
-                        
-                        setTimeout(() => {
-                            bootScreen.style.display = 'none';
-                            mainContent.style.display = 'block';
-                            
-                            // Start everything
-                            updateClock();
-                            setInterval(updateClock, 1000);
-                            initHeroTyping();
-                            initContactTerminal();
-                        }, 650);
-                    }, 900);
-                }
-            }
-
-            // Start boot
-            setTimeout(addBootLine, 300);
-        }
-
-        function forceBoot() {
-            const bootScreen = document.getElementById('boot-screen');
-            const mainContent = document.getElementById('main-content');
-            
-            bootScreen.style.transition = 'opacity 0.3s ease';
-            bootScreen.style.opacity = '0';
-            
-            setTimeout(() => {
-                bootScreen.style.display = 'none';
-                mainContent.style.display = 'block';
-                
-                updateClock();
-                setInterval(updateClock, 1000);
-                initHeroTyping();
-                initContactTerminal();
-            }, 350);
-        }
-
-        // ========== LIVE CLOCK ==========
-        function updateClock() {
-            const clockEl = document.getElementById('clock');
-            if (!clockEl) return;
-            
-            const now = new Date();
-            const options = { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit',
-                hour12: false,
-                timeZone: 'Asia/Kolkata'
-            };
-            clockEl.textContent = now.toLocaleTimeString('en-IN', options) + ' IST';
-        }
-
-        // ========== HERO TYPING TERMINAL ==========
-        function initHeroTyping() {
-            const typingEl = document.getElementById('typing-text');
-            if (!typingEl) return;
-
-            const textToType = `Results-driven AI/ML practitioner with hands-on expertise in LLM-powered applications, RAG systems and intelligent agent workflows. Proven ability to build scalable data pipelines and production-ready solutions.`;
-
-            let i = 0;
-            typingEl.textContent = '';
-
-            function typeChar() {
-                if (i < textToType.length) {
-                    typingEl.textContent += textToType.charAt(i);
-                    i++;
-                    setTimeout(typeChar, 28);
-                } else {
-                    // Finished typing
-                    setTimeout(() => {
-                        typingEl.style.borderRight = 'none';
-                    }, 1200);
-                }
-            }
-
-            // Start typing after short delay
-            setTimeout(typeChar, 850);
-        }
-
-        // ========== CONTACT TERMINAL ==========
-        let termBody;
-
-        function appendTermLine(text, isCommand = false) {
-            if (!termBody) return;
-            const line = document.createElement('div');
-            line.className = 'term-line';
-            
-            if (isCommand) {
-                line.innerHTML = `<span style="color:#ffbf00;">root@sam-os:~$ </span>${text}`;
-            } else {
-                line.textContent = text;
-            }
-            
-            termBody.appendChild(line);
-            termBody.scrollTop = termBody.scrollHeight;
-        }
-
-        function processTerminalCommand(cmd) {
-            if (!termBody) return;
-            
-            const trimmed = cmd.trim();
-            if (!trimmed) return;
-
-            appendTermLine(trimmed, true);
-
-            const parts = trimmed.toLowerCase().split(' ');
-            const command = parts[0];
-            const arg = parts.slice(1).join(' ');
-
-            switch (command) {
-                case 'help':
-                    appendTermLine("Available commands:");
-                    appendTermLine("  whoami     — Display operator profile");
-                    appendTermLine("  email      — Show primary contact");
-                    appendTermLine("  linkedin   — Open LinkedIn profile");
-                    appendTermLine("  github     — Open GitHub profile");
-                    appendTermLine("  projects   — List deployed projects");
-                    appendTermLine("  send <msg> — Transmit encrypted message");
-                    appendTermLine("  clear      — Clear terminal output");
-                    break;
-
-                case 'whoami':
-                    appendTermLine("sam-abishekraj");
-                    appendTermLine("Role: AI/ML Practitioner & System Architect");
-                    appendTermLine("Location: Madurai, Tamil Nadu, India");
-                    appendTermLine("Status: Building the future, one commit at a time.");
-                    break;
-
-                case 'email':
-                    appendTermLine("samabishek7@gmail.com");
-                    appendTermLine("[INFO] Primary secure channel. Use responsibly.");
-                    break;
-
-                case 'linkedin':
-                    appendTermLine("Opening LinkedIn profile in secure browser...");
-                    setTimeout(() => {
-                        window.open('https://www.linkedin.com/in/sam-abishekraj/', '_blank');
-                    }, 650);
-                    break;
-
-                case 'github':
-                    appendTermLine("Connecting to GitHub...");
-                    setTimeout(() => {
-                        window.open('https://github.com/Sam-Abishekraj', '_blank');
-                    }, 650);
-                    break;
-
-                case 'projects':
-                    appendTermLine("RAG Assistant     → https://github.com/Sam-Abishekraj/trueailab-rag-assistant");
-                    appendTermLine("FraudSense        → https://github.com/Sam-Abishekraj/Fraud_Sense");
-                    appendTermLine("Heart Disease     → https://github.com/Sam-Abishekraj/Heart-Disease-Classification");
-                    break;
-
-                case 'send':
-                    if (arg.length > 3) {
-                        appendTermLine(`Encrypting payload: "${arg}"`);
-                        appendTermLine("Establishing post-quantum secure channel...");
-                        setTimeout(() => {
-                            appendTermLine("✓ Packet transmitted successfully.");
-                            appendTermLine("Thank you. Response will arrive via encrypted channel.");
-                        }, 1350);
-                    } else {
-                        appendTermLine("Usage: send <your message here>");
-                    }
-                    break;
-
-                case 'clear':
-                    termBody.innerHTML = '';
-                    appendTermLine("Terminal cleared.");
-                    break;
-
-                default:
-                    appendTermLine(`Command not recognized: "${command}"`);
-                    appendTermLine("Type 'help' to see available commands.");
-            }
-        }
-
-        function initContactTerminal() {
-            termBody = document.getElementById('term-body');
-            const input = document.getElementById('term-input');
-
-            if (!termBody || !input) return;
-
-            // Initial boot messages
-            appendTermLine("Secure contact interface initialized.");
-            appendTermLine("Type 'help' for list of commands.");
-            appendTermLine("");
-
-            // Focus input on click anywhere in terminal
-            const terminal = document.querySelector('.terminal');
-            if (terminal) {
-                terminal.addEventListener('click', () => {
-                    input.focus();
-                });
-            }
-
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    const value = input.value.trim();
-                    if (value) {
-                        processTerminalCommand(value);
-                    }
-                    input.value = '';
-                }
-            });
-
-            // Easter egg: type "matrix"
-            input.addEventListener('input', function() {
-                if (input.value.toLowerCase() === 'matrix') {
-                    appendTermLine("Wake up, Neo...");
-                    setTimeout(() => {
-                        appendTermLine("The Matrix has you...");
-                    }, 800);
-                    input.value = '';
-                }
-            });
-        }
-
-        // ========== INITIALIZE EVERYTHING ==========
-        function initializePortfolio() {
-            // Start the boot sequence
-            startBootSequence();
-
-            // Keyboard support for boot screen
-            document.addEventListener('keydown', function handler(e) {
-                const bootScreen = document.getElementById('boot-screen');
-                if (bootScreen && bootScreen.style.display !== 'none') {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        document.removeEventListener('keydown', handler);
-                        forceBoot();
-                    }
-                }
-            });
-
-            // Subtle scanline effect already in CSS
-            console.log('%c[SAM-OS] Portfolio initialized successfully. All systems nominal.', 'color:#00ff9f');
-        }
-
-        // Boot on load
-        window.onload = initializePortfolio;
-    </script>
+<script src="assets/js/main.js" defer></script>
 </body>
 </html>
